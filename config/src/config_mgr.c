@@ -9,7 +9,7 @@
  * @brief Configuration manager implementation
  */
 
-#include <ovyl/config_mgr.h>
+#include <zmod/config_mgr.h>
 
 #include <zephyr/sys/__assert.h>
 #include <zephyr/fs/nvs.h>
@@ -22,15 +22,15 @@
 
 #include <zephyr/devicetree.h>
 
-#include <ovyl/configs.h>
+#include <zmod/configs.h>
 
-#include <ovyl/config_version.h>
+#include <zmod/config_version.h>
 
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
 
-LOG_MODULE_REGISTER(ovyl_cfg_mgr, CONFIG_OVYL_CFG_MGR_LOG_LEVEL);
+LOG_MODULE_REGISTER(zmod_cfg_mgr, CONFIG_ZMOD_CFG_MGR_LOG_LEVEL);
 
 #define CFG_OPT_FLASH_AREA nvs_storage
 
@@ -50,7 +50,7 @@ static struct {
  * Public Functions
  *****************************************************************************/
 
-void ovyl_config_mgr_init(void) {
+void zmod_config_mgr_init(void) {
     const struct flash_area *fa;
     int rc = flash_area_open(FLASH_AREA_ID(CFG_OPT_FLASH_AREA), &fa);
     if (rc < 0) {
@@ -71,15 +71,15 @@ void ovyl_config_mgr_init(void) {
         LOG_ERR("NVS failed to mount: %d", rc);
     }
 
-    LOG_INF("Ovyl config module v%s initialized", OVYL_CONFIG_VERSION_STRING);
+    LOG_INF("Zmod config module v%s initialized", ZMOD_CONFIG_VERSION_STRING);
 }
 
-bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size) {
+bool zmod_config_mgr_get_value(config_key_t key, void *dst, size_t size) {
     if (dst == NULL) {
         return false;
     }
 
-    config_entry_t *entry = ovyl_configs_get_entry(key);
+    config_entry_t *entry = zmod_configs_get_entry(key);
 
     if (entry == NULL) {
         return false;
@@ -108,12 +108,12 @@ bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size) {
     return true;
 }
 
-bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size) {
+bool zmod_config_mgr_set_value(config_key_t key, const void *src, size_t size) {
     if (src == NULL) {
         return false;
     }
 
-    config_entry_t *entry = ovyl_configs_get_entry(key);
+    config_entry_t *entry = zmod_configs_get_entry(key);
 
     if (entry == NULL) {
         return false;
@@ -135,19 +135,19 @@ bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size) {
     return true;
 }
 
-void ovyl_config_mgr_reset_nvs(void) {
+void zmod_config_mgr_reset_nvs(void) {
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
         int ret = nvs_delete(&prv_inst.fs, i);
 
         if (ret != 0) {
-            LOG_ERR("Failed to reset %s to default: %d", ovyl_config_key_as_str(i), ret);
+            LOG_ERR("Failed to reset %s to default: %d", zmod_config_key_as_str(i), ret);
         }
     }
 }
 
-void ovyl_config_mgr_reset_configs(void) {
+void zmod_config_mgr_reset_configs(void) {
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
-        config_entry_t *entry = ovyl_configs_get_entry(i);
+        config_entry_t *entry = zmod_configs_get_entry(i);
         if (entry == NULL) {
             continue;
         }
@@ -157,9 +157,9 @@ void ovyl_config_mgr_reset_configs(void) {
             int ret = nvs_delete(&prv_inst.fs, i);
 
             if (ret != 0) {
-                LOG_ERR("Failed to reset %s to default: %d", ovyl_config_key_as_str(i), ret);
+                LOG_ERR("Failed to reset %s to default: %d", zmod_config_key_as_str(i), ret);
             } else {
-                LOG_DBG("Reset %s to default", ovyl_config_key_as_str(i));
+                LOG_DBG("Reset %s to default", zmod_config_key_as_str(i));
             }
         }
     }
@@ -188,12 +188,12 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
     shell_print(sh, "====================");
 
     for (size_t i = 0; i < CFG_NUM_KEYS; i++) {
-        config_entry_t *entry = ovyl_configs_get_entry(i);
+        config_entry_t *entry = zmod_configs_get_entry(i);
         if (entry == NULL) {
             continue;
         }
 
-        const char *key_name = ovyl_config_key_as_str(i);
+        const char *key_name = zmod_config_key_as_str(i);
         size_t value_size = entry->value_size_bytes;
         if (value_size == 0U) {
             shell_print(sh, "  %s: <no data>", key_name);
@@ -202,7 +202,7 @@ static int cmd_config_list(const struct shell *sh, size_t argc, char **argv) {
 
         uint8_t value_buf[value_size];
 
-        if (!ovyl_config_mgr_get_value(i, value_buf, value_size)) {
+        if (!zmod_config_mgr_get_value(i, value_buf, value_size)) {
             shell_print(sh, "  %s: <error reading>", key_name);
             continue;
         }
@@ -232,7 +232,7 @@ static int cmd_config_reset_nvs(const struct shell *sh, size_t argc, char **argv
 
     shell_print(sh, "Resetting all NVS entries...");
 
-    ovyl_config_mgr_reset_nvs();
+    zmod_config_mgr_reset_nvs();
 
     shell_print(sh, "NVS reset completed");
     return 0;
@@ -247,7 +247,7 @@ static int cmd_config_reset_configs(const struct shell *sh, size_t argc, char **
 
     shell_print(sh, "Resetting resettable config entries...");
 
-    ovyl_config_mgr_reset_configs();
+    zmod_config_mgr_reset_configs();
 
     shell_print(sh, "Resettable config entries reset completed");
     return 0;
@@ -258,7 +258,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(config_cmds,
                                              NULL,
                                              "List all configuration values.\n"
                                              "usage:\n"
-                                             "$ ovyl_config list\n",
+                                             "$ zmod_config list\n",
                                              cmd_config_list,
                                              1,
                                              0),
@@ -267,7 +267,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(config_cmds,
                                              "Reset all NVS entries to defaults.\n"
                                              "This will delete ALL stored configuration values.\n"
                                              "usage:\n"
-                                             "$ ovyl_config reset_nvs\n",
+                                             "$ zmod_config reset_nvs\n",
                                              cmd_config_reset_nvs,
                                              1,
                                              0),
@@ -276,12 +276,12 @@ SHELL_STATIC_SUBCMD_SET_CREATE(config_cmds,
                                              "Reset resettable configuration entries to defaults.\n"
                                              "Only resets entries marked as resettable.\n"
                                              "usage:\n"
-                                             "$ ovyl_config reset_config\n",
+                                             "$ zmod_config reset_config\n",
                                              cmd_config_reset_configs,
                                              1,
                                              0),
                                SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_REGISTER(ovyl_config, &config_cmds, "Configuration management commands", NULL);
+SHELL_CMD_REGISTER(zmod_config, &config_cmds, "Configuration management commands", NULL);
 
 #endif /* CONFIG_SHELL */

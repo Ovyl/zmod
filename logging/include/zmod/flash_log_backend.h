@@ -9,8 +9,8 @@
  * @brief Interface for forcing inclusion of the flash log backend.
  */
 
-#ifndef OVYL_FLASH_LOG_BACKEND_H
-#define OVYL_FLASH_LOG_BACKEND_H
+#ifndef ZMOD_FLASH_LOG_BACKEND_H
+#define ZMOD_FLASH_LOG_BACKEND_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,4 +20,4 @@ extern "C" {
 }
 #endif
 
-#endif /* OVYL_FLASH_LOG_BACKEND_H */
+#endif /* ZMOD_FLASH_LOG_BACKEND_H */

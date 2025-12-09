@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Ovyl Modules"
+menu "Zmod Modules"
 
 rsource "../bt/Kconfig"
 rsource "../config/Kconfig"

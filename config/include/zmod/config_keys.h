@@ -9,8 +9,8 @@
  * @brief Definition of configuration keys
  */
 
-#ifndef OVYL_CONFIG_KEYS_H
-#define OVYL_CONFIG_KEYS_H
+#ifndef ZMOD_CONFIG_KEYS_H
+#define ZMOD_CONFIG_KEYS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +20,7 @@ extern "C" {
  * Definitions
  *****************************************************************************/
 
- #ifndef CONFIG_OVYL_CONFIG_APP_DEF_PATH
+ #ifndef CONFIG_ZMOD_CONFIG_APP_DEF_PATH
 #error "Set CONFIG_CONFIGS_APP_DEF_PATH in prj.conf to your app's .def file \
 (e.g. \"configs.def\"). Ensure the file is on the compiler include path: \
 - put it under app/include/, OR \
@@ -37,7 +37,7 @@ extern "C" {
  * @brief Definition of configuration keys
  */
 typedef enum {
-#include CONFIG_OVYL_CONFIG_APP_DEF_PATH
+#include CONFIG_ZMOD_CONFIG_APP_DEF_PATH
     CFG_NUM_KEYS
 } config_key_t;
 #undef CFG_DEFINE
@@ -49,4 +49,4 @@ typedef enum {
 #ifdef __cplusplus
 }
 #endif
-#endif /* OVYL_CONFIG_KEYS_H */
+#endif /* ZMOD_CONFIG_KEYS_H */

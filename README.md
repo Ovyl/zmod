@@ -1,4 +1,4 @@
-# Ovyl Zephyr Modules
+# Zmod - Zephyr Modules
 
 This repository contains **out-of-tree Zephyr RTOS modules** developed and maintained by **[Ovyl](https://ovyl.io/)**.  
 Each module provides reusable functionality (drivers, subsystems, utilities) that can be dropped into any Zephyr-based project.
@@ -52,7 +52,7 @@ west update
 Each module is integrated via Kconfig. For example, in `prj.conf`:
 
 ```conf
-CONFIG_OVYL_IWDOG=y
+CONFIG_ZMOD_IWDOG=y
 ```
 
 See the `Integration Guides` within each module for device tree and configuration details.

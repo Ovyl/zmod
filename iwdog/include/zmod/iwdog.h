@@ -6,11 +6,11 @@
 
 /**
  * @file iwdog.h
- * @brief Ovyl Internal watchdog timer management
+ * @brief Zmod Internal watchdog timer management
  */
 
-#ifndef OVYL_IWDOG_H
-#define OVYL_IWDOG_H
+#ifndef ZMOD_IWDOG_H
+#define ZMOD_IWDOG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +20,7 @@ extern "C" {
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 
-#ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
+#ifdef CONFIG_ZMOD_IWDOG_ZBUS_PUBLISH
 #include <zephyr/zbus/zbus.h>
 #endif
 
@@ -37,13 +37,13 @@ extern "C" {
  *
  * Published when iwdog reset is imminent
  */
-struct ovyl_iwdog_warning_event {
+struct zmod_iwdog_warning_event {
     int32_t time_until_reset_ms; /* Time remaining until iwdog reset in milliseconds */
 };
 
-#ifdef CONFIG_OVYL_IWDOG_ZBUS_PUBLISH
-/* Zbus channel for Ovyl iwdog reset imminent warnings */
-ZBUS_CHAN_DECLARE(ovyl_iwdog_warning_chan);
+#ifdef CONFIG_ZMOD_IWDOG_ZBUS_PUBLISH
+/* Zbus channel for Zmod iwdog reset imminent warnings */
+ZBUS_CHAN_DECLARE(zmod_iwdog_warning_chan);
 #endif
 
 /****************************************************************
@@ -59,7 +59,7 @@ ZBUS_CHAN_DECLARE(ovyl_iwdog_warning_chan);
  *
  * @return 0 on success, negative errno on failure
  */
-int ovyl_iwdog_init(void);
+int zmod_iwdog_init(void);
 
 /**
  * @brief Feed the internal watchdog timer
@@ -68,7 +68,7 @@ int ovyl_iwdog_init(void);
  * from resetting the system. The feed period must be less than the
  * configured timeout.
  */
-void ovyl_iwdog_feed(void);
+void zmod_iwdog_feed(void);
 
 /**
  * @brief Start the internal watchdog service thread
@@ -77,9 +77,9 @@ void ovyl_iwdog_feed(void);
  * iwdog timer. The thread will run at the interval specified in
  * Kconfig.
  */
-void ovyl_iwdog_start_service_thread(void);
+void zmod_iwdog_start_service_thread(void);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* OVYL_IWDOG_H */
+#endif /* ZMOD_IWDOG_H */

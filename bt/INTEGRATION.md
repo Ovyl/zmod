@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-# Ovyl BT Module Integration Guide
+# Zmod BT Module Integration Guide
 
 ## Overview
 
-The Ovyl BT module provides a Bluetooth Low Energy (BLE) peripheral implementation with configurable advertising, connection management, and optional Zbus event publishing for connection state changes.
+The Zmod BT module provides a Bluetooth Low Energy (BLE) peripheral implementation with configurable advertising, connection management, and optional Zbus event publishing for connection state changes.
 
 ## Features
 
@@ -20,7 +20,7 @@ The Ovyl BT module provides a Bluetooth Low Energy (BLE) peripheral implementati
 
 ### 1. Add Module to West Manifest
 
-Add the Ovyl modules repository to your `west.yml`:
+Add the Zmod repository to your `west.yml`:
 
 ```yaml
 manifest:
@@ -47,22 +47,22 @@ west update ovyl-zephyr-modules
 Enable the module and configure options in your application's `prj.conf`:
 
 ```
-# Enable Ovyl BT module
-CONFIG_OVYL_BT=y
+# Enable Zmod BT module
+CONFIG_ZMOD_BT=y
 
 # Advertising configuration (optional)
-CONFIG_OVYL_BT_ADV_FLAGS=0x06                    # BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR
-CONFIG_OVYL_BT_ADV_CONNECTABLE=y                 # Enable connectable advertising
-CONFIG_OVYL_BT_ADV_INTERVAL_MIN=1600             # 1 second (in 0.625ms units)
-CONFIG_OVYL_BT_ADV_INTERVAL_MAX=2400             # 1.5 seconds (in 0.625ms units)
-CONFIG_OVYL_BT_ADV_AUTO_START=y                  # Auto-start advertising on init
-CONFIG_OVYL_BT_ADV_RESTART_ON_DISCONNECT=y       # Auto-restart after disconnect
-CONFIG_OVYL_BT_ADV_ID=0                          # Bluetooth identity ID (0-15)
+CONFIG_ZMOD_BT_ADV_FLAGS=0x06                    # BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR
+CONFIG_ZMOD_BT_ADV_CONNECTABLE=y                 # Enable connectable advertising
+CONFIG_ZMOD_BT_ADV_INTERVAL_MIN=1600             # 1 second (in 0.625ms units)
+CONFIG_ZMOD_BT_ADV_INTERVAL_MAX=2400             # 1.5 seconds (in 0.625ms units)
+CONFIG_ZMOD_BT_ADV_AUTO_START=y                  # Auto-start advertising on init
+CONFIG_ZMOD_BT_ADV_RESTART_ON_DISCONNECT=y       # Auto-restart after disconnect
+CONFIG_ZMOD_BT_ADV_ID=0                          # Bluetooth identity ID (0-15)
 CONFIG_BT_DEVICE_NAME="Device Name"
 
 # Enable Zbus event publishing (optional)
 CONFIG_ZBUS=y
-CONFIG_OVYL_BT_ZBUS_PUBLISH=y
+CONFIG_ZMOD_BT_ZBUS_PUBLISH=y
 
 # Enable shell commands (optional)
 CONFIG_SHELL=y
@@ -78,7 +78,7 @@ Add the following to your `prj.conf`:
 
 ```conf
 # Enable Bluetooth shell over NUS
-CONFIG_OVYL_BT_SHELL=y
+CONFIG_ZMOD_BT_SHELL=y
 
 # Additional recommended buffer configurations for stable operation (not required)
 CONFIG_BT_L2CAP_TX_MTU=247
@@ -119,13 +119,13 @@ This can be adjusted at runtime by sending `log enable <lvl>` where `lvl` is
 
 ### Initialization
 
-Initialize the BT module during system startup. The advertising name can either be set with a Kconfig option, or it can be provided at runtime when calling `ovyl_bt_core_init`. If the Kconfig default is used, pass `NULL` to the init function:
+Initialize the BT module during system startup. The advertising name can either be set with a Kconfig option, or it can be provided at runtime when calling `zmod_bt_core_init`. If the Kconfig default is used, pass `NULL` to the init function:
 
 ```c
-#include <ovyl/bt_core.h>
+#include <zmod/bt_core.h>
 
 int main(void) {
-    int err = ovyl_bt_core_init(NULL); /* use CONFIG_BT_DEVICE_NAME */
+    int err = zmod_bt_core_init(NULL); /* use CONFIG_BT_DEVICE_NAME */
     if (err) {
         LOG_ERR("Failed to initialize BT: %d", err);
         return err;
@@ -136,7 +136,7 @@ int main(void) {
 
 /* Or provide a runtime name */
 int main(void) {
-    int err = ovyl_bt_core_init("My Device");
+    int err = zmod_bt_core_init("My Device");
     if (err) {
         LOG_ERR("Failed to initialize BT: %d", err);
         return err;
@@ -148,7 +148,7 @@ int main(void) {
 
 ### Custom Advertising Payloads
 
-By default the module advertises the GAP flags and the configured device name. If your application needs to advertise additional data (e.g. custom 128-bit UUIDs) you can supply your own payloads before calling `ovyl_bt_core_init()`:
+By default the module advertises the GAP flags and the configured device name. If your application needs to advertise additional data (e.g. custom 128-bit UUIDs) you can supply your own payloads before calling `zmod_bt_core_init()`:
 
 ```c
 static const uint8_t custom_uuid[] = {
@@ -157,7 +157,7 @@ static const uint8_t custom_uuid[] = {
 };
 
 static struct bt_data adv_payload[] = {
-    BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_OVYL_BT_ADV_FLAGS),
+    BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_ZMOD_BT_ADV_FLAGS),
     BT_DATA(BT_DATA_UUID128_ALL, custom_uuid, sizeof(custom_uuid)),
 };
 
@@ -167,8 +167,8 @@ static struct bt_data scan_rsp_payload[] = {
 
 void app_bt_init(void)
 {
-    /* Must be called before ovyl_bt_core_init() */
-    int err = ovyl_bt_core_set_adv_payload(adv_payload,
+    /* Must be called before zmod_bt_core_init() */
+    int err = zmod_bt_core_set_adv_payload(adv_payload,
                                            ARRAY_SIZE(adv_payload),
                                            scan_rsp_payload,
                                            ARRAY_SIZE(scan_rsp_payload));
@@ -177,21 +177,21 @@ void app_bt_init(void)
         return;
     }
 
-    err = ovyl_bt_core_init(NULL);
+    err = zmod_bt_core_init(NULL);
     if (err) {
         LOG_ERR("Failed to initialize BT core: %d", err);
     }
 }
 ```
 
-Passing `NULL` (or zero length) for either payload reverts to the module defaults. At runtime you can also call `ovyl_bt_core_reset_adv_payload()` to restore the original data.
+Passing `NULL` (or zero length) for either payload reverts to the module defaults. At runtime you can also call `zmod_bt_core_reset_adv_payload()` to restore the original data.
 
 ### Using Callbacks (Alternative to Zbus)
 
 Register callbacks to handle connection events directly:
 
 ```c
-#include <ovyl/bt_core.h>
+#include <zmod/bt_core.h>
 
 static void on_bt_connected(struct bt_conn *conn, uint8_t err) {
     if (err) {
@@ -227,10 +227,10 @@ int main(void) {
 
 ### Manual Advertising Control
 
-If `CONFIG_OVYL_BT_ADV_AUTO_START` is disabled, manually control advertising:
+If `CONFIG_ZMOD_BT_ADV_AUTO_START` is disabled, manually control advertising:
 
 ```c
-#include <ovyl/bt_core.h>
+#include <zmod/bt_core.h>
 
 // Start advertising
 ble_core_start_advertising();
@@ -243,48 +243,48 @@ if (ble_core_is_currently_advertising()) {
 
 ### Zbus Event Subscription
 
-Subscribe to BT connection events when `CONFIG_OVYL_BT_ZBUS_PUBLISH` is enabled:
+Subscribe to BT connection events when `CONFIG_ZMOD_BT_ZBUS_PUBLISH` is enabled:
 
 ```c
 #include <zephyr/zbus/zbus.h>
-#include <ovyl/bt_core.h>
+#include <zmod/bt_core.h>
 
 // Define listener callback
 static void bt_conn_listener(const struct zbus_channel *chan) {
-    const struct ovyl_bt_conn_event *evt = zbus_chan_const_msg(chan);
+    const struct zmod_bt_conn_event *evt = zbus_chan_const_msg(chan);
 
-    if (evt->state == OVYL_BT_CONN_STATE_CONNECTED) {
+    if (evt->state == ZMOD_BT_CONN_STATE_CONNECTED) {
         LOG_INF("Device connected (handle: 0x%04x)", evt->conn_handle);
-    } else if (evt->state == OVYL_BT_CONN_STATE_DISCONNECTED) {
+    } else if (evt->state == ZMOD_BT_CONN_STATE_DISCONNECTED) {
         LOG_INF("Device disconnected (reason: %u)", evt->reason);
     }
 }
 
 // Define and register listener
 ZBUS_LISTENER_DEFINE(bt_conn_listener_node, bt_conn_listener);
-ZBUS_CHAN_ADD_OBS(ovyl_bt_conn_chan, bt_conn_listener_node, 3);
+ZBUS_CHAN_ADD_OBS(zmod_bt_conn_chan, bt_conn_listener_node, 3);
 ```
 
 ### Shell Commands
 
 When `CONFIG_SHELL` is enabled, the following commands are available:
 
-- `ovyl_bt status` - Show BT module status (advertising/connection state)
-- `ovyl_bt adv start` - Start BLE advertising
-- `ovyl_bt adv stop` - Stop BLE advertising
-- `ovyl_bt disconnect` - Disconnect active BLE connection
+- `zmod_bt status` - Show BT module status (advertising/connection state)
+- `zmod_bt adv start` - Start BLE advertising
+- `zmod_bt adv stop` - Stop BLE advertising
+- `zmod_bt disconnect` - Disconnect active BLE connection
 
 Example usage:
 ```bash
-uart:~$ ovyl_bt status
+uart:~$ zmod_bt status
 BT Module Status:
   Advertising: Yes
   Connected: No
 
-uart:~$ ovyl_bt adv stop
+uart:~$ zmod_bt adv stop
 Advertising stopped
 
-uart:~$ ovyl_bt adv start
+uart:~$ zmod_bt adv start
 Advertising start requested
 ```
 

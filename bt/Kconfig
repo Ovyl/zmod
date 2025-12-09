@@ -1,19 +1,19 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-menuconfig OVYL_BT
-    bool "Ovyl BT Module"
+menuconfig ZMOD_BT
+    bool "Zmod BT Module"
     depends on BT && BT_PERIPHERAL
     select BT_CONN
     default n
     help
-      Enable the Ovyl Bluetooth module for BLE peripheral functionality
+      Enable the Zmod Bluetooth module for BLE peripheral functionality
       with configurable advertising and connection management.
 
-if OVYL_BT
+if ZMOD_BT
 
 # Advertising configuration
-config OVYL_BT_ADV_FLAGS
+config ZMOD_BT_ADV_FLAGS
     hex "BLE Advertising Flags"
     default 0x06
     help
@@ -21,13 +21,13 @@ config OVYL_BT_ADV_FLAGS
       BT_LE_AD_GENERAL = 0x02
       BT_LE_AD_NO_BREDR = 0x04
 
-config OVYL_BT_ADV_CONNECTABLE
+config ZMOD_BT_ADV_CONNECTABLE
     bool "Enable connectable advertising"
     default y
     help
       Enable BLE connectable advertising mode
 
-config OVYL_BT_ADV_INTERVAL_MIN
+config ZMOD_BT_ADV_INTERVAL_MIN
     int "Minimum advertising interval (in 0.625ms units)"
     default 1600
     range 32 16384
@@ -35,7 +35,7 @@ config OVYL_BT_ADV_INTERVAL_MIN
       Minimum advertising interval in 0.625ms units.
       Default is 1600 (1 second). Range: 20ms to 10.24s.
 
-config OVYL_BT_ADV_INTERVAL_MAX
+config ZMOD_BT_ADV_INTERVAL_MAX
     int "Maximum advertising interval (in 0.625ms units)"
     default 2400
     range 32 16384
@@ -43,21 +43,21 @@ config OVYL_BT_ADV_INTERVAL_MAX
       Maximum advertising interval in 0.625ms units.
       Default is 2400 (1.5 seconds). Range: 20ms to 10.24s.
 
-config OVYL_BT_ADV_AUTO_START
+config ZMOD_BT_ADV_AUTO_START
     bool "Auto-start BLE advertising on initialization"
     default y
     help
       Automatically start BLE advertising when the BT module is initialized.
       If disabled, the application must manually call ble_core_start_advertising().
 
-config OVYL_BT_ADV_RESTART_ON_DISCONNECT
+config ZMOD_BT_ADV_RESTART_ON_DISCONNECT
     bool "Auto-restart advertising after disconnect"
     default y
     help
       Automatically restart BLE advertising when a device disconnects.
       If disabled, advertising must be manually restarted after disconnection.
 
-config OVYL_BT_ADV_ID
+config ZMOD_BT_ADV_ID
     int "Bluetooth identity ID for advertising"
     default 0
     range 0 15
@@ -65,7 +65,7 @@ config OVYL_BT_ADV_ID
       The Bluetooth identity to use for advertising (BT_ID_DEFAULT = 0).
       Allows using different identities for different advertising sets.
 
-config OVYL_BT_ZBUS_PUBLISH
+config ZMOD_BT_ZBUS_PUBLISH
     bool "Publish BT connection events via Zbus"
     depends on ZBUS
     default y
@@ -73,15 +73,15 @@ config OVYL_BT_ZBUS_PUBLISH
       Publish Bluetooth connection and disconnection events to Zbus channel.
       Allows other modules to subscribe to BT connection state changes.
 
-config OVYL_BT_SHELL_CMDS
+config ZMOD_BT_SHELL_CMDS
     bool "Enable shell commands for BT module"
     depends on SHELL
     default y
     help
       Enable shell commands for controlling the BT module (advertising,
-      connection management, status). Commands are available under 'ovyl_bt'.
+      connection management, status). Commands are available under 'zmod_bt'.
 
-config OVYL_BT_SHELL
+config ZMOD_BT_SHELL
     bool "Enable shell over Bluetooth (NUS)"
     default n
     select SHELL_BT_NUS
@@ -89,9 +89,9 @@ config OVYL_BT_SHELL
     help
       Enable shell over Bluetooth which provides BLE shell transport via Nordic UART Service (NUS).
 
-endif # OVYL_BT
+endif # ZMOD_BT
 
 # Pattern for per-module logging config
-module = OVYL_BT
-module-str = OVYL_BT
+module = ZMOD_BT
+module-str = ZMOD_BT
 source "subsys/logging/Kconfig.template.log_config"
