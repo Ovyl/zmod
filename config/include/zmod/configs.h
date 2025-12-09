@@ -9,13 +9,13 @@
  * @brief Configuration entries interface
  */
 
-#ifndef OVYL_CONFIGS_H
-#define OVYL_CONFIGS_H
+#ifndef ZMOD_CONFIGS_H
+#define ZMOD_CONFIGS_H
 
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <ovyl/config_keys.h>
+#include <zmod/config_keys.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +51,7 @@ typedef struct config_entry_t {
  * @param key Key for entry
  * @return Returns pointer to entry or NULL if key is not valid
  */
-config_entry_t *ovyl_configs_get_entry(config_key_t key);
+config_entry_t *zmod_configs_get_entry(config_key_t key);
 
 /**
  * @brief Get human readable version of key
@@ -60,9 +60,9 @@ config_entry_t *ovyl_configs_get_entry(config_key_t key);
  * @return Will return human readable key if key exists or "Unknown Key" if not
  * valid.
  */
-const char *ovyl_config_key_as_str(config_key_t key);
+const char *zmod_config_key_as_str(config_key_t key);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* OVYL_CONFIGS_H */
+#endif /* ZMOD_CONFIGS_H */

@@ -6,10 +6,10 @@
 
 /**
  * @file bt_core.c
- * @brief Ovyl BT module core implementation for BLE peripheral functionality
+ * @brief Zmod BT module core implementation for BLE peripheral functionality
  */
 
-#include <ovyl/bt_core.h>
+#include <zmod/bt_core.h>
 
 #include <errno.h>
 #include <stdbool.h>
@@ -22,13 +22,13 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/logging/log.h>
 
-#include <ovyl/bt_version.h>
+#include <zmod/bt_version.h>
 
-#ifdef CONFIG_OVYL_BT_ZBUS_PUBLISH
+#ifdef CONFIG_ZMOD_BT_ZBUS_PUBLISH
 #include <zephyr/zbus/zbus.h>
 #endif
 
-#ifdef CONFIG_OVYL_BT_SHELL
+#ifdef CONFIG_ZMOD_BT_SHELL
 #include <bluetooth/services/nus.h>
 #include <shell/shell_bt_nus.h>
 #include <zephyr/shell/shell.h>
@@ -39,12 +39,12 @@
  * Definitions
  *****************************************************************************/
 
-LOG_MODULE_REGISTER(ovyl_bt_core, CONFIG_OVYL_BT_LOG_LEVEL);
+LOG_MODULE_REGISTER(zmod_bt_core, CONFIG_ZMOD_BT_LOG_LEVEL);
 
-#ifdef CONFIG_OVYL_BT_ZBUS_PUBLISH
+#ifdef CONFIG_ZMOD_BT_ZBUS_PUBLISH
 /* Define the Zbus channel for BT connection events */
-ZBUS_CHAN_DEFINE(ovyl_bt_conn_chan,
-                 struct ovyl_bt_conn_event,
+ZBUS_CHAN_DEFINE(zmod_bt_conn_chan,
+                 struct zmod_bt_conn_event,
                  NULL,
                  NULL,
                  ZBUS_OBSERVERS_EMPTY,
@@ -60,7 +60,7 @@ ZBUS_CHAN_DEFINE(ovyl_bt_conn_chan,
  * 
  */
 static struct bt_data prv_default_adv_data[] = {
-    BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_OVYL_BT_ADV_FLAGS),
+    BT_DATA_BYTES(BT_DATA_FLAGS, CONFIG_ZMOD_BT_ADV_FLAGS),
     BT_DATA(BT_DATA_NAME_COMPLETE, CONFIG_BT_DEVICE_NAME, sizeof(CONFIG_BT_DEVICE_NAME) - 1),
 };
 
@@ -69,12 +69,12 @@ static struct bt_data prv_default_scan_rsp[] = {
 };
 
 #if defined(CONFIG_BT_DEVICE_NAME_MAX)
-#define OVYL_BT_NAME_BUF_SIZE CONFIG_BT_DEVICE_NAME_MAX
+#define ZMOD_BT_NAME_BUF_SIZE CONFIG_BT_DEVICE_NAME_MAX
 #else
-#define OVYL_BT_NAME_BUF_SIZE 31U
+#define ZMOD_BT_NAME_BUF_SIZE 31U
 #endif
 
-static char prv_adv_name_buf[OVYL_BT_NAME_BUF_SIZE + 1];
+static char prv_adv_name_buf[ZMOD_BT_NAME_BUF_SIZE + 1];
 
 static const struct bt_data *prv_adv_data = prv_default_adv_data;
 static size_t prv_adv_data_len = ARRAY_SIZE(prv_default_adv_data);
@@ -82,12 +82,12 @@ static size_t prv_adv_data_len = ARRAY_SIZE(prv_default_adv_data);
 static const struct bt_data *prv_scan_rsp = prv_default_scan_rsp;
 static size_t prv_scan_rsp_len = ARRAY_SIZE(prv_default_scan_rsp);
 
-#define OVYL_BT_MAX_ADV_ITEMS 6
+#define ZMOD_BT_MAX_ADV_ITEMS 6
 
-static struct bt_data prv_user_adv_data[OVYL_BT_MAX_ADV_ITEMS];
+static struct bt_data prv_user_adv_data[ZMOD_BT_MAX_ADV_ITEMS];
 static uint8_t prv_user_adv_storage[BT_GAP_ADV_MAX_ADV_DATA_LEN];
 
-static struct bt_data prv_user_scan_data[OVYL_BT_MAX_ADV_ITEMS];
+static struct bt_data prv_user_scan_data[ZMOD_BT_MAX_ADV_ITEMS];
 static uint8_t prv_user_scan_storage[BT_GAP_ADV_MAX_ADV_DATA_LEN];
 
 /**
@@ -95,14 +95,14 @@ static uint8_t prv_user_scan_storage[BT_GAP_ADV_MAX_ADV_DATA_LEN];
  *
  */
 static const struct bt_le_adv_param adv_params = {
-#ifdef CONFIG_OVYL_BT_ADV_CONNECTABLE
+#ifdef CONFIG_ZMOD_BT_ADV_CONNECTABLE
     .options = BT_LE_ADV_OPT_CONN,
 #else
     .options = 0,
 #endif
-    .interval_min = CONFIG_OVYL_BT_ADV_INTERVAL_MIN,
-    .interval_max = CONFIG_OVYL_BT_ADV_INTERVAL_MAX,
-    .id = CONFIG_OVYL_BT_ADV_ID,
+    .interval_min = CONFIG_ZMOD_BT_ADV_INTERVAL_MIN,
+    .interval_max = CONFIG_ZMOD_BT_ADV_INTERVAL_MAX,
+    .id = CONFIG_ZMOD_BT_ADV_ID,
 };
 
 /**
@@ -110,7 +110,7 @@ static const struct bt_le_adv_param adv_params = {
  */
 static struct {
     struct k_work advertising_worker;
-    ovyl_bt_core_callbacks_t callbacks;
+    zmod_bt_core_callbacks_t callbacks;
     struct bt_conn *conn;
     uint16_t conn_handle;
     volatile bool is_advertising;
@@ -174,7 +174,7 @@ static int prv_copy_payload(const struct bt_data *src,
 /*****************************************************************************
  * Public Functions
  *****************************************************************************/
-int ovyl_bt_core_init(const char *adv_name) {
+int zmod_bt_core_init(const char *adv_name) {
     int err;
 
     prv_inst.conn = NULL;
@@ -204,11 +204,11 @@ int ovyl_bt_core_init(const char *adv_name) {
         return err;
     }
 
-#ifdef CONFIG_OVYL_BT_ADV_AUTO_START
+#ifdef CONFIG_ZMOD_BT_ADV_AUTO_START
     prv_advertising_start();
 #endif
 
-#ifdef CONFIG_OVYL_BT_SHELL
+#ifdef CONFIG_ZMOD_BT_SHELL
     err = shell_bt_nus_init();
     if (err) {
         LOG_ERR("Failed to initialize BT NUS shell (err: %d)", err);
@@ -224,25 +224,25 @@ int ovyl_bt_core_init(const char *adv_name) {
             active_name = CONFIG_BT_DEVICE_NAME;
         }
     }
-    LOG_INF("Ovyl BT module v%s initialized, advertising name: %s",
-            OVYL_BT_VERSION_STRING,
+    LOG_INF("Zmod BT module v%s initialized, advertising name: %s",
+            ZMOD_BT_VERSION_STRING,
             active_name);
     return 0;
 }
 
-void ovyl_bt_core_start_advertising(void) {
+void zmod_bt_core_start_advertising(void) {
     prv_advertising_start();
 }
 
-void ovyl_bt_core_stop_advertising(void) {
+void zmod_bt_core_stop_advertising(void) {
     prv_advertising_stop();
 }
 
-bool ovyl_bt_core_is_currently_advertising(void) {
+bool zmod_bt_core_is_currently_advertising(void) {
     return prv_inst.is_advertising;
 }
 
-void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks) {
+void zmod_bt_core_set_callbacks(const zmod_bt_core_callbacks_t *callbacks) {
     if (callbacks) {
         prv_inst.callbacks = *callbacks;
     } else {
@@ -250,7 +250,7 @@ void ovyl_bt_core_set_callbacks(const ovyl_bt_core_callbacks_t *callbacks) {
     }
 }
 
-int ovyl_bt_core_set_adv_payload(const struct bt_data *adv_data,
+int zmod_bt_core_set_adv_payload(const struct bt_data *adv_data,
                                  size_t adv_len,
                                  const struct bt_data *scan_rsp,
                                  size_t scan_len)
@@ -307,7 +307,7 @@ int ovyl_bt_core_set_adv_payload(const struct bt_data *adv_data,
     return 0;
 }
 
-void ovyl_bt_core_reset_adv_payload(void)
+void zmod_bt_core_reset_adv_payload(void)
 {
     if (prv_inst.is_advertising) {
         (void)bt_le_adv_stop();
@@ -344,7 +344,7 @@ static void prv_device_connected(struct bt_conn *conn, uint8_t err) {
 
         prv_inst.conn = bt_conn_ref(conn);
 
-#ifdef CONFIG_OVYL_BT_SHELL
+#ifdef CONFIG_ZMOD_BT_SHELL
         shell_bt_nus_enable(conn);
 #endif
 
@@ -359,11 +359,11 @@ static void prv_device_connected(struct bt_conn *conn, uint8_t err) {
         prv_inst.callbacks.on_connected(conn, err);
     }
 
-#ifdef CONFIG_OVYL_BT_ZBUS_PUBLISH
+#ifdef CONFIG_ZMOD_BT_ZBUS_PUBLISH
     /* Publish connection event via Zbus */
-    struct ovyl_bt_conn_event evt = {
-        .state = OVYL_BT_CONN_STATE_CONNECTED, .reason = err, .conn_handle = prv_inst.conn_handle};
-    int ret_zbus = zbus_chan_pub(&ovyl_bt_conn_chan, &evt, K_NO_WAIT);
+    struct zmod_bt_conn_event evt = {
+        .state = ZMOD_BT_CONN_STATE_CONNECTED, .reason = err, .conn_handle = prv_inst.conn_handle};
+    int ret_zbus = zbus_chan_pub(&zmod_bt_conn_chan, &evt, K_NO_WAIT);
     if (ret_zbus != 0) {
         LOG_WRN("Failed to publish BT connection event: %d", ret_zbus);
     }
@@ -381,7 +381,7 @@ static void prv_device_connected(struct bt_conn *conn, uint8_t err) {
 static void prv_device_disconnected(struct bt_conn *conn, uint8_t reason) {
     LOG_INF("Disconnected from device: %u", reason);
 
-#ifdef CONFIG_OVYL_BT_SHELL
+#ifdef CONFIG_ZMOD_BT_SHELL
     shell_bt_nus_disable();
 #endif
 
@@ -397,17 +397,17 @@ static void prv_device_disconnected(struct bt_conn *conn, uint8_t reason) {
         prv_inst.callbacks.on_disconnected(conn, reason);
     }
 
-#ifdef CONFIG_OVYL_BT_ZBUS_PUBLISH
+#ifdef CONFIG_ZMOD_BT_ZBUS_PUBLISH
     /* Publish disconnection event via Zbus */
-    struct ovyl_bt_conn_event evt = {
-        .state = OVYL_BT_CONN_STATE_DISCONNECTED, .reason = reason, .conn_handle = 0};
-    int ret = zbus_chan_pub(&ovyl_bt_conn_chan, &evt, K_NO_WAIT);
+    struct zmod_bt_conn_event evt = {
+        .state = ZMOD_BT_CONN_STATE_DISCONNECTED, .reason = reason, .conn_handle = 0};
+    int ret = zbus_chan_pub(&zmod_bt_conn_chan, &evt, K_NO_WAIT);
     if (ret != 0) {
         LOG_WRN("Failed to publish BT disconnection event: %d", ret);
     }
 #endif
 
-#ifdef CONFIG_OVYL_BT_ADV_RESTART_ON_DISCONNECT
+#ifdef CONFIG_ZMOD_BT_ADV_RESTART_ON_DISCONNECT
     prv_advertising_start();
 #endif
 }
@@ -461,7 +461,7 @@ BT_CONN_CB_DEFINE(conn_callbacks) = {
 /*****************************************************************************
  * Shell Commands
  *****************************************************************************/
-#ifdef CONFIG_OVYL_BT_SHELL_CMDS
+#ifdef CONFIG_ZMOD_BT_SHELL_CMDS
 
 #include <zephyr/shell/shell.h>
 #include <stdlib.h>
@@ -539,19 +539,19 @@ static int cmd_status(const struct shell *shell, size_t argc, char **argv) {
 }
 
 /* Advertising subcommands */
-SHELL_STATIC_SUBCMD_SET_CREATE(ovyl_bt_adv_cmds,
+SHELL_STATIC_SUBCMD_SET_CREATE(zmod_bt_adv_cmds,
                                SHELL_CMD(start, NULL, "Start BLE advertising", cmd_adv_start),
                                SHELL_CMD(stop, NULL, "Stop BLE advertising", cmd_adv_stop),
                                SHELL_SUBCMD_SET_END);
 
 /* Main BT subcommands */
 SHELL_STATIC_SUBCMD_SET_CREATE(
-    ovyl_bt_cmds,
-    SHELL_CMD(adv, &ovyl_bt_adv_cmds, "Advertising commands", NULL),
+    zmod_bt_cmds,
+    SHELL_CMD(adv, &zmod_bt_adv_cmds, "Advertising commands", NULL),
     SHELL_CMD(disconnect, NULL, "Disconnect active BLE connection", cmd_disconnect),
     SHELL_CMD(status, NULL, "Show BT module status", cmd_status),
     SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_REGISTER(ovyl_bt, &ovyl_bt_cmds, "Ovyl Bluetooth module commands", NULL);
+SHELL_CMD_REGISTER(zmod_bt, &zmod_bt_cmds, "Zmod Bluetooth module commands", NULL);
 
-#endif /* CONFIG_OVYL_BT_SHELL_CMDS */
+#endif /* CONFIG_ZMOD_BT_SHELL_CMDS */

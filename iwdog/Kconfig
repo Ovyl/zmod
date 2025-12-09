@@ -1,92 +1,92 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Ovyl Internal Watchdog"
+menu "Zmod Internal Watchdog"
 
-config OVYL_IWDOG
+config ZMOD_IWDOG
     bool "Internal Watchdog Support"
     default n
     select WATCHDOG
 
-config OVYL_WATCHDOG_FEED_INTERVAL_MS
+config ZMOD_WATCHDOG_FEED_INTERVAL_MS
     int "Watchdog feed interval (ms)"
     range 50 60000
     default 1000
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Interval in milliseconds at which the watchdog is fed.
       Must be smaller than the actual watchdog timeout.
 
-config OVYL_WATCHDOG_TIMEOUT_MS
+config ZMOD_WATCHDOG_TIMEOUT_MS
     int "Watchdog timeout (ms)"
     range 100 120000
     default 5000
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Timeout in milliseconds for the watchdog. If not fed, system resets.
 
-config OVYL_IWDOG_THREAD_STACK_SIZE
-    int "Ovyl IWDOG thread stack size"
+config ZMOD_IWDOG_THREAD_STACK_SIZE
+    int "Zmod IWDOG thread stack size"
     default 1024
     range 256 8192
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Stack size in bytes for the IWDOG service thread.
 
-config OVYL_IWDOG_THREAD_PRIORITY
-    int "Ovyl IWDOG thread priority"
+config ZMOD_IWDOG_THREAD_PRIORITY
+    int "Zmod IWDOG thread priority"
     default 0
     range -16 15
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Thread priority for the IWDOG service thread.
       Lower values = higher priority.
 
 
-config OVYL_IWDOG_WARNING_PCT
+config ZMOD_IWDOG_WARNING_PCT
     int "Warn when this percent of timeout has elapsed"
     default 75
     range 1 99
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Example: 75 means warn at 75% of the timeout (25% remaining).
 
-config OVYL_IWDOG_AUTO_START_THREAD
-    bool "Auto-start Ovyl IWDOG feed thread"
+config ZMOD_IWDOG_AUTO_START_THREAD
+    bool "Auto-start Zmod IWDOG feed thread"
     default y
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Automatically start the watchdog feeding thread during initialization.
-      If disabled, the application must manually call ovyl_iwdog_start_service_thread().
+      If disabled, the application must manually call zmod_iwdog_start_service_thread().
 
-config OVYL_IWDOG_ZBUS_PUBLISH
+config ZMOD_IWDOG_ZBUS_PUBLISH
     bool "Publish imminent-reset warnings via Zbus"
     default y
-    depends on OVYL_IWDOG && ZBUS
+    depends on ZMOD_IWDOG && ZBUS
     help
       Publish watchdog reset imminent warnings to Zbus channel.
       Allows other modules to subscribe to watchdog warning events.
 
-config OVYL_IWDOG_LOG_PANIC_ON_WARNING
+config ZMOD_IWDOG_LOG_PANIC_ON_WARNING
     bool "Force immediate log flush on watchdog warning"
     default n
-    depends on OVYL_IWDOG
+    depends on ZMOD_IWDOG
     help
       Calls LOG_PANIC() shortly before reset to flush logs. Increases latency.
 
-config OVYL_IWDOG_LOG_PANIC_THRESHOLD_MS
+config ZMOD_IWDOG_LOG_PANIC_THRESHOLD_MS
     int "Threshold before reset to call LOG_PANIC"
     default 250
     range 0 5000
-    depends on OVYL_IWDOG_LOG_PANIC_ON_WARNING
+    depends on ZMOD_IWDOG_LOG_PANIC_ON_WARNING
     help
       Milliseconds before watchdog reset to call LOG_PANIC().
       LOG_PANIC() forces synchronous log output to ensure messages are flushed.
 
 
 # Pattern for per-module logging config
-module = OVYL_IWDOG
-module-str = OVYL_IWDOG
+module = ZMOD_IWDOG
+module-str = ZMOD_IWDOG
 source "subsys/logging/Kconfig.template.log_config"
 
 

@@ -9,8 +9,8 @@
  * @brief Flash-based logging backend for persistent log storage
  */
 
-#include <ovyl/flash_log_backend.h>
-#include <ovyl/log_storage.h>
+#include <zmod/flash_log_backend.h>
+#include <zmod/log_storage.h>
 
 #include <string.h>
 
@@ -20,7 +20,7 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/sys/util.h>
 
-#define FLASH_LOG_BUFFER_SIZE CONFIG_OVYL_LOG_STORAGE_BUFFER_SIZE
+#define FLASH_LOG_BUFFER_SIZE CONFIG_ZMOD_LOG_STORAGE_BUFFER_SIZE
 
 static uint8_t flash_log_buf[FLASH_LOG_BUFFER_SIZE];
 
@@ -31,7 +31,7 @@ static int prv_flash_log_output_func(uint8_t *data, size_t length, void *ctx)
 {
     ARG_UNUSED(ctx);
 
-    int ret = ovyl_log_storage_add_data(data, length);
+    int ret = zmod_log_storage_add_data(data, length);
 
     if (ret < 0) {
         return ret;
@@ -60,7 +60,7 @@ static void prv_flash_log_backend_init(const struct log_backend *const backend)
 {
     ARG_UNUSED(backend);
 
-    ovyl_log_storage_init();
+    zmod_log_storage_init();
 }
 
 /** @brief Flush buffered output during a LOG_PANIC event. */

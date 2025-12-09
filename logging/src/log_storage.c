@@ -9,7 +9,7 @@
  * @brief Flash-backed log storage implementation.
  */
 
-#include <ovyl/log_storage.h>
+#include <zmod/log_storage.h>
 
 #include <errno.h>
 #include <stddef.h>
@@ -29,10 +29,10 @@
 #include <zephyr/fs/fcb.h>
 
 
-#include <ovyl/config_mgr.h>
-#include <ovyl/configs.h>
+#include <zmod/config_mgr.h>
+#include <zmod/configs.h>
 
-LOG_MODULE_REGISTER(ovyl_log_storage, CONFIG_OVYL_LOG_STORAGE_LOG_LEVEL);
+LOG_MODULE_REGISTER(zmod_log_storage, CONFIG_ZMOD_LOG_STORAGE_LOG_LEVEL);
 
 #define LOG_STORAGE_FLASH_LABEL logging_storage
 #define LOG_STORAGE_FLASH_AREA_ID FLASH_AREA_ID(LOG_STORAGE_FLASH_LABEL)
@@ -41,22 +41,22 @@ LOG_MODULE_REGISTER(ovyl_log_storage, CONFIG_OVYL_LOG_STORAGE_LOG_LEVEL);
 #define LOG_STORAGE_NUM_SECTORS (FIXED_PARTITION_SIZE(LOG_STORAGE_FLASH_LABEL) / LOG_STORAGE_SECTOR_SIZE_BYTES)
 #define LOG_STORAGE_MUTEX_TIMEOUT_MS (200U)
 
-#define LOG_RUNTIME_MIN_LEVEL CONFIG_OVYL_LOG_STORAGE_MIN_RUNTIME_LEVEL
+#define LOG_RUNTIME_MIN_LEVEL CONFIG_ZMOD_LOG_STORAGE_MIN_RUNTIME_LEVEL
 
 /** @brief Read cursor state for exported log data. */
 typedef struct {
     struct fcb_entry head;
     size_t read_bytes;
-} ovyl_log_storage_read_ctx_t;
+} zmod_log_storage_read_ctx_t;
 
 /** @brief Internal module state. */
 typedef struct {
     const struct flash_area *fa;
     struct fcb fcb_inst;
     struct flash_sector sectors[LOG_STORAGE_NUM_SECTORS];
-    ovyl_log_storage_metadata_t metadata;
+    zmod_log_storage_metadata_t metadata;
     struct k_mutex mutex;
-    ovyl_log_storage_read_ctx_t read_head;
+    zmod_log_storage_read_ctx_t read_head;
     volatile bool export_in_progress;
 } prv_log_storage_state_t;
 
@@ -127,7 +127,7 @@ static const prv_log_level_entry_t *prv_find_log_level(const char *name)
     return NULL;
 }
 
-int ovyl_log_storage_init(void)
+int zmod_log_storage_init(void)
 {
     if (prv_inst.fa != NULL) {
         return 0;
@@ -173,13 +173,13 @@ int ovyl_log_storage_init(void)
     }
 
     k_mutex_init(&prv_inst.mutex);
-    ovyl_log_storage_reset_read();
+    zmod_log_storage_reset_read();
     prv_inst.export_in_progress = false;
 
     return 0;
 }
 
-int ovyl_log_storage_add_data(const void *buf, size_t buf_size)
+int zmod_log_storage_add_data(const void *buf, size_t buf_size)
 {
     if (buf == NULL) {
         return -EINVAL;
@@ -254,7 +254,7 @@ int ovyl_log_storage_add_data(const void *buf, size_t buf_size)
     return 0;
 }
 
-int ovyl_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
+int zmod_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
 {
     if (dst == NULL || out_size == NULL) {
         return -EINVAL;
@@ -266,7 +266,7 @@ int ovyl_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
         return -EBUSY;
     }
 
-    ovyl_log_storage_read_ctx_t *ctx = &prv_inst.read_head;
+    zmod_log_storage_read_ctx_t *ctx = &prv_inst.read_head;
     struct fcb_entry *loc = &prv_inst.read_head.head;
 
     if (loc->fe_sector == NULL || (loc->fe_sector && ctx->read_bytes == loc->fe_data_len)) {
@@ -300,12 +300,12 @@ int ovyl_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
     return ret;
 }
 
-void ovyl_log_storage_reset_read(void)
+void zmod_log_storage_reset_read(void)
 {
     memset(&prv_inst.read_head, 0, sizeof(prv_inst.read_head));
 }
 
-int ovyl_log_storage_clear(void)
+int zmod_log_storage_clear(void)
 {
     k_mutex_lock(&prv_inst.mutex, K_MSEC(LOG_STORAGE_MUTEX_TIMEOUT_MS));
 
@@ -322,17 +322,17 @@ int ovyl_log_storage_clear(void)
     return 0;
 }
 
-void ovyl_log_storage_set_export_in_progress(bool in_progress)
+void zmod_log_storage_set_export_in_progress(bool in_progress)
 {
     prv_inst.export_in_progress = in_progress;
 }
 
-void ovyl_log_storage_init_log_level(void)
+void zmod_log_storage_init_log_level(void)
 {
     uint8_t log_level;
     bool use_default = false;
 
-    if (ovyl_config_mgr_get_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level))) {
+    if (zmod_config_mgr_get_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level))) {
         if (log_level > LOG_LEVEL_DBG) {
             use_default = true;
         }
@@ -342,13 +342,13 @@ void ovyl_log_storage_init_log_level(void)
 
     if (use_default) {
         log_level = CONFIG_LOG_DEFAULT_LEVEL;
-        ovyl_config_mgr_set_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level));
+        zmod_config_mgr_set_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level));
     }
 
     if (log_level < LOG_RUNTIME_MIN_LEVEL) {
         log_level = LOG_RUNTIME_MIN_LEVEL;
         LOG_WRN("Persisted log level is below minimum; clamping to %u", log_level);
-        ovyl_config_mgr_set_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level));
+        zmod_config_mgr_set_value(CFG_LOG_LEVEL, &log_level, sizeof(log_level));
     }
 
     uint32_t source_count = log_src_cnt_get(Z_LOG_LOCAL_DOMAIN_ID);
@@ -364,7 +364,7 @@ void ovyl_log_storage_init_log_level(void)
     LOG_INF("Log level initialized: %u (applied to %u/%u modules)", log_level, set_count, source_count);
 }
 
-int ovyl_log_storage_set_log_level(uint8_t level)
+int zmod_log_storage_set_log_level(uint8_t level)
 {
     if (level > LOG_LEVEL_DBG) {
         LOG_ERR("Invalid log level: %u. Valid levels: %u=ERR, %u=WRN, %u=INF, %u=DBG",
@@ -387,7 +387,7 @@ int ovyl_log_storage_set_log_level(uint8_t level)
         log_filter_set(NULL, Z_LOG_LOCAL_DOMAIN_ID, source_id, clamped_level);
     }
 
-    if (!ovyl_config_mgr_set_value(CFG_LOG_LEVEL, &clamped_level, sizeof(clamped_level))) {
+    if (!zmod_config_mgr_set_value(CFG_LOG_LEVEL, &clamped_level, sizeof(clamped_level))) {
         LOG_ERR("Failed to save log level to config");
         return -EIO;
     }
@@ -424,7 +424,7 @@ static int prv_shell_log_storage_clear(const struct shell *sh, size_t argc, char
 
     shell_print(sh, "Clearing stored logs...");
 
-    int ret = ovyl_log_storage_clear();
+    int ret = zmod_log_storage_clear();
 
     if (ret < 0) {
         shell_error(sh, "Failed to clear logs: %d", ret);
@@ -562,7 +562,7 @@ static int prv_shell_log_storage_set_level_cmd(const struct shell *sh, size_t ar
         level = (uint8_t)numeric;
     }
 
-    int ret = ovyl_log_storage_set_log_level(level);
+    int ret = zmod_log_storage_set_log_level(level);
     if (ret < 0) {
         shell_error(sh, "Failed to set log level: %d", ret);
         return ret;

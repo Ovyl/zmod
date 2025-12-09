@@ -1,30 +1,30 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Ovyl Config Module"
+menu "Zmod Config Module"
 
-config OVYL_CONFIG
+config ZMOD_CONFIG
     bool "Config Module"
     default n
     select NVS
     select FLASH
     select FLASH_MAP
 
-config OVYL_CONFIG_APP_DEF_PATH
+config ZMOD_CONFIG_APP_DEF_PATH
     string "Path to app configs.def"
     help
       Path to the application’s CFG(...) file.
       Example:
         CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
 
-config OVYL_CONFIG_USE_CUSTOM_TYPES
+config ZMOD_CONFIG_USE_CUSTOM_TYPES
     bool "Use custom config types"
     default n
     help
       Enable if the application uses custom config types defined
       in a separate header file.
 
-config OVYL_CONFIG_TYPES_DEF_PATH
+config ZMOD_CONFIG_TYPES_DEF_PATH
     string "Path to app custom type header file"
     help
       Path to the application’s custom config types header file.
@@ -32,8 +32,8 @@ config OVYL_CONFIG_TYPES_DEF_PATH
         CONFIGS_APP_DEF_PATH="\"${CMAKE_CURRENT_SOURCE_DIR}/app/app_configs.def\""
 
 # Pattern for per-module logging config
-module = OVYL_CFG_MGR
-module-str = OVYL_CFG_MGR
+module = ZMOD_CFG_MGR
+module-str = ZMOD_CFG_MGR
 source "subsys/logging/Kconfig.template.log_config"
 
 

@@ -9,10 +9,10 @@
  * @brief Configuration manager interface
  */
 
-#ifndef OVYL_CONFIG_MGR_H
-#define OVYL_CONFIG_MGR_H
+#ifndef ZMOD_CONFIG_MGR_H
+#define ZMOD_CONFIG_MGR_H
 
-#include <ovyl/configs.h>
+#include <zmod/configs.h>
 
 #include <stdbool.h>
 #include <zephyr/zbus/zbus.h>
@@ -36,7 +36,7 @@ extern "C" {
 /**
  * @brief Initialize configuration manager
  */
-void ovyl_config_mgr_init(void);
+void zmod_config_mgr_init(void);
 
 /**
  * @brief Get value of configuration for key
@@ -46,7 +46,7 @@ void ovyl_config_mgr_init(void);
  * @param size Size of buffer
  * @return Returns true on success
  */
-bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size);
+bool zmod_config_mgr_get_value(config_key_t key, void *dst, size_t size);
 
 /**
  * @brief Set value for given key
@@ -56,7 +56,7 @@ bool ovyl_config_mgr_get_value(config_key_t key, void *dst, size_t size);
  * @param size Size of source
  * @return Returns true on success
  */
-bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size);
+bool zmod_config_mgr_set_value(config_key_t key, const void *src, size_t size);
 
 /**
  * @brief Reset all NVS entries to defaults
@@ -64,7 +64,7 @@ bool ovyl_config_mgr_set_value(config_key_t key, const void *src, size_t size);
  * This will delete ALL configuration values from NVS storage,
  * causing them to use default values on next read.
  */
-void ovyl_config_mgr_reset_nvs(void);
+void zmod_config_mgr_reset_nvs(void);
 
 /**
  * @brief Reset resettable configuration entries to defaults
@@ -72,9 +72,9 @@ void ovyl_config_mgr_reset_nvs(void);
  * This will only reset configuration entries that have the
  * resettable flag set to true in their definition.
  */
-void ovyl_config_mgr_reset_configs(void);
+void zmod_config_mgr_reset_configs(void);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* OVYL_CONFIG_MGR_H */
+#endif /* ZMOD_CONFIG_MGR_H */

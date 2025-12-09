@@ -1,20 +1,20 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-menu "Ovyl Logging Module"
+menu "Zmod Logging Module"
 
-config OVYL_LOG_STORAGE
+config ZMOD_LOG_STORAGE
     bool "Flash log storage backend"
     default n
-    depends on OVYL_CONFIG
+    depends on ZMOD_CONFIG
     select FCB
     select FLASH
     select FLASH_MAP
     help
-      Enable the Ovyl flash log storage module, which records log output
+      Enable the Zmod flash log storage module, which records log output
       to an FCB partition and exposes shell helpers for exporting logs.
 
-config OVYL_LOG_STORAGE_MIN_RUNTIME_LEVEL
+config ZMOD_LOG_STORAGE_MIN_RUNTIME_LEVEL
     int "Minimum runtime log level"
     range 1 4
     default 1
@@ -22,17 +22,17 @@ config OVYL_LOG_STORAGE_MIN_RUNTIME_LEVEL
       Lowest severity that can be selected at runtime. The module clamps
       requested values below this level to ensure critical logs stay visible.
 
-config OVYL_LOG_STORAGE_BUFFER_SIZE
+config ZMOD_LOG_STORAGE_BUFFER_SIZE
     int "Flash log export buffer size"
     default 1024
     range 256 16384
-    depends on OVYL_LOG_STORAGE
+    depends on ZMOD_LOG_STORAGE
     help
       Size in bytes of the temporary buffer used when formatting log entries
       for flash storage. Increase if exported records are truncated.
 
-module = OVYL_LOG_STORAGE
-module-str = OVYL_LOG_STORAGE
+module = ZMOD_LOG_STORAGE
+module-str = ZMOD_LOG_STORAGE
 source "subsys/logging/Kconfig.template.log_config"
 
 endmenu
