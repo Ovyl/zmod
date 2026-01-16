@@ -35,10 +35,10 @@ manifest:
       url-base: https://github.com/Ovyl
 
   projects:
-    - name: ovyl-zephyr-modules
+    - name: zmod
       remote: ovyl
       revision: main    # or a release tag/commit
-      path: modules/ovyl
+      path: modules/zmod
 ```
 
 Update your workspace:
@@ -48,6 +48,8 @@ west update
 ```
 
 ### 2. Enable a module
+
+Note: the checkout location is controlled by the consuming project's manifest `path`. If you want the repo under `modules/zmod`, set `path: modules/zmod` as shown above.
 
 Each module is integrated via Kconfig. For example, in `prj.conf`:
 
