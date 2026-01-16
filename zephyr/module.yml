@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Ovyl
 # SPDX-License-Identifier: Apache-2.0
 
-name: ovyl-zephyr-modules
+name: zmod
 build:
   cmake: .
   kconfig: zephyr/Kconfig
