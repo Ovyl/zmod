@@ -52,7 +52,7 @@ static struct {
 
 void zmod_config_mgr_init(void) {
     const struct flash_area *fa;
-    int rc = flash_area_open(FLASH_AREA_ID(CFG_OPT_FLASH_AREA), &fa);
+    int rc = flash_area_open(FIXED_PARTITION_ID(CFG_OPT_FLASH_AREA), &fa);
     if (rc < 0) {
         LOG_ERR("Failed to open NVS flash area: %s", STRINGIFY(CFG_OPT_FLASH_AREA));
         return;
