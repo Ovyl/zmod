@@ -12,7 +12,7 @@
 #include <zmod/config_mgr.h>
 
 #include <zephyr/sys/__assert.h>
-#include <zephyr/fs/nvs.h>
+#include <zephyr/kvss/nvs.h>
 #include <zephyr/drivers/flash.h>
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/logging/log.h>
@@ -52,7 +52,7 @@ static struct {
 
 void zmod_config_mgr_init(void) {
     const struct flash_area *fa;
-    int rc = flash_area_open(FIXED_PARTITION_ID(CFG_OPT_FLASH_AREA), &fa);
+    int rc = flash_area_open(PARTITION_ID(CFG_OPT_FLASH_AREA), &fa);
     if (rc < 0) {
         LOG_ERR("Failed to open NVS flash area: %s", STRINGIFY(CFG_OPT_FLASH_AREA));
         return;
@@ -60,6 +60,11 @@ void zmod_config_mgr_init(void) {
 
     struct flash_pages_info info;
     rc = flash_get_page_info_by_offs(fa->fa_dev, fa->fa_off, &info);
+    if ((rc != 0) || (info.size == 0U)) {
+        LOG_ERR("Failed to get flash page info: %d", rc);
+        flash_area_close(fa);
+        return;
+    }
 
     prv_inst.fs.offset = fa->fa_off;
     prv_inst.fs.flash_device = fa->fa_dev;
