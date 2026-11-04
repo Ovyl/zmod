@@ -28,17 +28,17 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/fs/fcb.h>
 
-
 #include <zmod/config_mgr.h>
 #include <zmod/configs.h>
 
 LOG_MODULE_REGISTER(zmod_log_storage, CONFIG_ZMOD_LOG_STORAGE_LOG_LEVEL);
 
 #define LOG_STORAGE_FLASH_LABEL logging_storage
-#define LOG_STORAGE_FLASH_AREA_ID FLASH_AREA_ID(LOG_STORAGE_FLASH_LABEL)
+#define LOG_STORAGE_FLASH_AREA_ID PARTITION_ID(LOG_STORAGE_FLASH_LABEL)
 #define LOG_STORAGE_FCB_MAGIC (0x1EE71065U)
 #define LOG_STORAGE_SECTOR_SIZE_BYTES (4096U)
-#define LOG_STORAGE_NUM_SECTORS (FIXED_PARTITION_SIZE(LOG_STORAGE_FLASH_LABEL) / LOG_STORAGE_SECTOR_SIZE_BYTES)
+#define LOG_STORAGE_NUM_SECTORS                                                                    \
+    (PARTITION_SIZE(LOG_STORAGE_FLASH_LABEL) / LOG_STORAGE_SECTOR_SIZE_BYTES)
 #define LOG_STORAGE_MUTEX_TIMEOUT_MS (200U)
 
 #define LOG_RUNTIME_MIN_LEVEL CONFIG_ZMOD_LOG_STORAGE_MIN_RUNTIME_LEVEL
@@ -63,8 +63,7 @@ typedef struct {
 static prv_log_storage_state_t prv_inst;
 
 /** @brief Convert a Zephyr log severity level to a printable name. */
-static const char *prv_get_log_level_name(uint8_t level)
-{
+static const char *prv_get_log_level_name(uint8_t level) {
     switch (level) {
         case LOG_LEVEL_NONE:
             return "OFF";
@@ -95,8 +94,7 @@ static const prv_log_level_entry_t prv_log_levels[] = {
 };
 
 /** @brief Resolve a textual log level into the matching table entry. */
-static const prv_log_level_entry_t *prv_find_log_level(const char *name)
-{
+static const prv_log_level_entry_t *prv_find_log_level(const char *name) {
     if (name == NULL) {
         return NULL;
     }
@@ -127,8 +125,7 @@ static const prv_log_level_entry_t *prv_find_log_level(const char *name)
     return NULL;
 }
 
-int zmod_log_storage_init(void)
-{
+int zmod_log_storage_init(void) {
     if (prv_inst.fa != NULL) {
         return 0;
     }
@@ -179,8 +176,7 @@ int zmod_log_storage_init(void)
     return 0;
 }
 
-int zmod_log_storage_add_data(const void *buf, size_t buf_size)
-{
+int zmod_log_storage_add_data(const void *buf, size_t buf_size) {
     if (buf == NULL) {
         return -EINVAL;
     }
@@ -254,8 +250,7 @@ int zmod_log_storage_add_data(const void *buf, size_t buf_size)
     return 0;
 }
 
-int zmod_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
-{
+int zmod_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size) {
     if (dst == NULL || out_size == NULL) {
         return -EINVAL;
     }
@@ -300,13 +295,11 @@ int zmod_log_storage_fetch_data(void *dst, size_t dest_size, size_t *out_size)
     return ret;
 }
 
-void zmod_log_storage_reset_read(void)
-{
+void zmod_log_storage_reset_read(void) {
     memset(&prv_inst.read_head, 0, sizeof(prv_inst.read_head));
 }
 
-int zmod_log_storage_clear(void)
-{
+int zmod_log_storage_clear(void) {
     k_mutex_lock(&prv_inst.mutex, K_MSEC(LOG_STORAGE_MUTEX_TIMEOUT_MS));
 
     int ret = fcb_clear(&prv_inst.fcb_inst);
@@ -322,13 +315,11 @@ int zmod_log_storage_clear(void)
     return 0;
 }
 
-void zmod_log_storage_set_export_in_progress(bool in_progress)
-{
+void zmod_log_storage_set_export_in_progress(bool in_progress) {
     prv_inst.export_in_progress = in_progress;
 }
 
-void zmod_log_storage_init_log_level(void)
-{
+void zmod_log_storage_init_log_level(void) {
     uint8_t log_level;
     bool use_default = false;
 
@@ -361,11 +352,11 @@ void zmod_log_storage_init_log_level(void)
         }
     }
 
-    LOG_INF("Log level initialized: %u (applied to %u/%u modules)", log_level, set_count, source_count);
+    LOG_INF(
+        "Log level initialized: %u (applied to %u/%u modules)", log_level, set_count, source_count);
 }
 
-int zmod_log_storage_set_log_level(uint8_t level)
-{
+int zmod_log_storage_set_log_level(uint8_t level) {
     if (level > LOG_LEVEL_DBG) {
         LOG_ERR("Invalid log level: %u. Valid levels: %u=ERR, %u=WRN, %u=INF, %u=DBG",
                 level,
@@ -407,8 +398,7 @@ int zmod_log_storage_set_log_level(uint8_t level)
 #include <zephyr/shell/shell.h>
 
 /** @brief Shell command handler that reports export-in-progress state. */
-static int prv_shell_print_export_status(const struct shell *sh, size_t argc, char **argv)
-{
+static int prv_shell_print_export_status(const struct shell *sh, size_t argc, char **argv) {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -417,8 +407,7 @@ static int prv_shell_print_export_status(const struct shell *sh, size_t argc, ch
 }
 
 /** @brief Shell command handler to erase all stored log entries. */
-static int prv_shell_log_storage_clear(const struct shell *sh, size_t argc, char **argv)
-{
+static int prv_shell_log_storage_clear(const struct shell *sh, size_t argc, char **argv) {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -436,8 +425,7 @@ static int prv_shell_log_storage_clear(const struct shell *sh, size_t argc, char
 }
 
 /** @brief Shell command handler that streams stored logs to the shell. */
-static int prv_shell_log_storage_export(const struct shell *sh, size_t argc, char **argv)
-{
+static int prv_shell_log_storage_export(const struct shell *sh, size_t argc, char **argv) {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -496,8 +484,7 @@ out:
 }
 
 /** @brief Print a table of compiled and runtime log levels for each module. */
-static int prv_shell_list_module_log_levels(const struct shell *sh)
-{
+static int prv_shell_list_module_log_levels(const struct shell *sh) {
     uint32_t source_count = log_src_cnt_get(Z_LOG_LOCAL_DOMAIN_ID);
 
     shell_print(sh, "Module Log Levels (%u modules):", source_count);
@@ -519,14 +506,14 @@ static int prv_shell_list_module_log_levels(const struct shell *sh)
                     compiled_name);
     }
 
-    shell_print(sh, "\nUse 'log_storage set_log_level <level>' to change runtime levels for all modules.");
+    shell_print(
+        sh, "\nUse 'log_storage set_log_level <level>' to change runtime levels for all modules.");
 
     return 0;
 }
 
 /** @brief Shell helper that lists available severity names and current levels. */
-static int prv_shell_log_storage_list_levels(const struct shell *sh, size_t argc, char **argv)
-{
+static int prv_shell_log_storage_list_levels(const struct shell *sh, size_t argc, char **argv) {
     ARG_UNUSED(argc);
     ARG_UNUSED(argv);
 
@@ -540,10 +527,10 @@ static int prv_shell_log_storage_list_levels(const struct shell *sh, size_t argc
 }
 
 /** @brief Shell command handler for updating the runtime log level. */
-static int prv_shell_log_storage_set_level_cmd(const struct shell *sh, size_t argc, char **argv)
-{
+static int prv_shell_log_storage_set_level_cmd(const struct shell *sh, size_t argc, char **argv) {
     if (argc < 2) {
-        shell_error(sh, "Missing level argument. Usage: log_storage set_log_level <err|wrn|inf|dbg|1-4>");
+        shell_error(
+            sh, "Missing level argument. Usage: log_storage set_log_level <err|wrn|inf|dbg|1-4>");
         return -EINVAL;
     }
 
@@ -555,7 +542,8 @@ static int prv_shell_log_storage_set_level_cmd(const struct shell *sh, size_t ar
     } else {
         char *endptr = NULL;
         long numeric = strtol(argv[1], &endptr, 10);
-        if ((endptr == NULL) || (*endptr != '\0') || numeric < LOG_RUNTIME_MIN_LEVEL || numeric > LOG_LEVEL_DBG) {
+        if ((endptr == NULL) || (*endptr != '\0') || numeric < LOG_RUNTIME_MIN_LEVEL ||
+            numeric > LOG_LEVEL_DBG) {
             shell_error(sh, "Invalid level '%s'. Use one of: err, wrn, inf, dbg, or 1-4.", argv[1]);
             return -EINVAL;
         }
@@ -574,48 +562,49 @@ static int prv_shell_log_storage_set_level_cmd(const struct shell *sh, size_t ar
     return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(log_storage_cmds,
-                               SHELL_CMD_ARG(export_status,
-                                             NULL,
-                                             "Print log export status.\n"
-                                             "usage:\n"
-                                             "$ log_storage export_status\n",
-                                             prv_shell_print_export_status,
-                                             1,
-                                             0),
-                               SHELL_CMD_ARG(clear,
-                                             NULL,
-                                             "Erase all stored log entries.\n"
-                                             "usage:\n"
-                                             "$ log_storage clear\n",
-                                             prv_shell_log_storage_clear,
-                                             1,
-                                             0),
-                               SHELL_CMD_ARG(export,
-                                             NULL,
-                                             "Stream stored log entries as plain text.\n"
-                                             "usage:\n"
-                                             "$ log_storage export\n",
-                                             prv_shell_log_storage_export,
-                                             1,
-                                             0),
-                               SHELL_CMD_ARG(list_log_levels,
-                                             NULL,
-                                             "List current module log levels and available severities.\n"
-                                             "usage:\n"
-                                             "$ log_storage list_log_levels\n",
-                                             prv_shell_log_storage_list_levels,
-                                             1,
-                                             0),
-                               SHELL_CMD_ARG(set_log_level,
-                                             NULL,
-                                             "Set runtime log level for all modules (minimum 'err').\n"
-                                             "usage:\n"
-                                             "$ log_storage set_log_level <err|wrn|inf|dbg|1-4>\n",
-                                             prv_shell_log_storage_set_level_cmd,
-                                             2,
-                                             0),
-                               SHELL_SUBCMD_SET_END);
+SHELL_STATIC_SUBCMD_SET_CREATE(
+    log_storage_cmds,
+    SHELL_CMD_ARG(export_status,
+                  NULL,
+                  "Print log export status.\n"
+                  "usage:\n"
+                  "$ log_storage export_status\n",
+                  prv_shell_print_export_status,
+                  1,
+                  0),
+    SHELL_CMD_ARG(clear,
+                  NULL,
+                  "Erase all stored log entries.\n"
+                  "usage:\n"
+                  "$ log_storage clear\n",
+                  prv_shell_log_storage_clear,
+                  1,
+                  0),
+    SHELL_CMD_ARG(export,
+                  NULL,
+                  "Stream stored log entries as plain text.\n"
+                  "usage:\n"
+                  "$ log_storage export\n",
+                  prv_shell_log_storage_export,
+                  1,
+                  0),
+    SHELL_CMD_ARG(list_log_levels,
+                  NULL,
+                  "List current module log levels and available severities.\n"
+                  "usage:\n"
+                  "$ log_storage list_log_levels\n",
+                  prv_shell_log_storage_list_levels,
+                  1,
+                  0),
+    SHELL_CMD_ARG(set_log_level,
+                  NULL,
+                  "Set runtime log level for all modules (minimum 'err').\n"
+                  "usage:\n"
+                  "$ log_storage set_log_level <err|wrn|inf|dbg|1-4>\n",
+                  prv_shell_log_storage_set_level_cmd,
+                  2,
+                  0),
+    SHELL_SUBCMD_SET_END);
 
 SHELL_CMD_REGISTER(log_storage, &log_storage_cmds, "Log storage commands", NULL);
 
